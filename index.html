@@ -656,7 +656,89 @@ body.is-login footer{display:none}
   .qtext{font-size:17px}
   .grid-n{grid-template-columns:repeat(7,1fr)}
 }
+/* ---- Sesión sin desplazamiento de página (móvil) ---- */
+.m-gridbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7}
+@media (max-width:820px){
+  html:has(body.in-sess),body.in-sess{overflow:hidden;height:100%;overscroll-behavior:none}
+  body.in-sess .sb-brand{display:none}
+  body.in-sess main{position:fixed;inset:0;max-width:none;margin:0;padding:calc(10px + var(--safe-t)) 12px calc(80px + var(--safe-b));display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  body.in-sess main>section.panel:first-child{flex:none;padding:12px 14px}
+  body.in-sess main>section.panel:first-child .eyebrow{font-size:9.5px;letter-spacing:.12em}
+  body.in-sess .prog{margin-top:10px}
+  body.in-sess .qwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+  body.in-sess .qcard{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 14px 16px;scrollbar-width:none}
+  body.in-sess .qcard::-webkit-scrollbar{display:none}
+  body.in-sess .qcard{min-width:0;max-width:100%;overflow-x:hidden}
+  body.in-sess .meta{min-width:0}
+  body.in-sess .qnum{margin-bottom:6px}
+  body.in-sess .qbig{font-size:34px}
+  body.in-sess .meta{flex-wrap:nowrap;overflow:hidden;margin-bottom:10px}
+  body.in-sess .meta .tag{white-space:nowrap}
+  body.in-sess .meta .tag:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+  body.in-sess .meta .tag.mono,body.in-sess .meta .tag:nth-child(2){display:none}
+  body.in-sess .meta .tag.orig,body.in-sess .meta .tag.ia{flex:none}
+  body.in-sess .qtext{font-size:17px;line-height:1.45;margin-bottom:14px}
+  body.in-sess .opts{gap:8px}
+  body.in-sess .opt{padding:11px 12px;min-height:52px;font-size:15px;line-height:1.4}
+  body.in-sess .opt .L{width:30px;height:30px}
+  .m-score{font-family:var(--font-mono);font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--gold-text);white-space:nowrap}
+  body.in-sess .sess-top .note{font-size:12.5px;white-space:nowrap}
+  /* Panel lateral: oculto; en simulacro se abre como hoja */
+  body.in-sess .side{display:none}
+  body.in-sess.gridsheet .side{display:grid;position:fixed;left:0;right:0;top:auto;bottom:0;align-content:start;z-index:31;gap:12px;padding:16px 16px calc(18px + var(--safe-b));background:var(--surface);border-radius:22px 22px 0 0;border-top:1px solid var(--line);box-shadow:0 -24px 60px rgba(0,0,0,.35);max-height:80dvh;overflow:auto;animation:sheetUp .35s cubic-bezier(.2,.9,.2,1)}
+  body.in-sess.gridsheet .side .panel{box-shadow:none;border:0;padding:0;background:transparent}
+  body.in-sess.gridsheet .side .btn{width:100%}
+  body.in-sess.gridsheet main{z-index:32}
+  body.in-sess.gridsheet main::after{content:"";position:fixed;inset:0;z-index:30;background:rgba(6,11,23,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:riseM .3s both}
+  body.in-sess .qcard .qnav .m-gridbtn{display:inline-flex;align-items:center;gap:6px;padding:12px 12px;font-size:13.5px}
+  /* Retroalimentación de la práctica como hoja sobre la barra de acciones */
+  body.in-sess .fb{position:fixed;left:8px;right:8px;bottom:calc(76px + var(--safe-b));z-index:23;margin:0;max-height:min(58dvh,460px);overflow-y:auto;overscroll-behavior:contain;border-radius:18px;border-left-width:1px;border-top-width:3px;padding:14px 16px 16px;box-shadow:0 -18px 40px -12px rgba(6,11,23,.45);background-color:var(--surface);animation:sheetUp .35s cubic-bezier(.2,.9,.2,1)}
+  body.in-sess .fb.ok{background-image:linear-gradient(var(--ok-bg),var(--ok-bg))}
+  body.in-sess .fb.bad{background-image:linear-gradient(var(--bad-bg),var(--bad-bg))}
+  body.in-sess .fb h3{font-size:24px;margin-bottom:2px}
+  body.in-sess .fb p{font-size:14.5px;margin:5px 0}
+}
+@media (max-width:820px) and (max-height:700px){
+  body.in-sess main>section.panel:first-child .prog{margin-top:8px}
+  body.in-sess .qbig{font-size:28px}
+  body.in-sess .qtext{font-size:16px;margin-bottom:10px}
+  body.in-sess .opt{padding:9px 11px;min-height:46px;font-size:14.5px}
+  body.in-sess .opts{gap:7px}
+}
 
+
+/* ---- Sesión sin desplazamiento de página (computador) ---- */
+@media (min-width:821px){.sidebar{overflow-y:auto;scrollbar-width:none}}
+@media (min-width:821px){
+  body.in-sess{overflow:hidden}
+  body.in-sess .content{height:100vh}
+  body.in-sess footer{display:none}
+  body.in-sess main{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  body.in-sess main>section.panel:first-child{flex:none}
+  body.in-sess .qwrap{flex:1 1 auto;min-height:0;grid-template-rows:minmax(0,1fr)}
+  body.in-sess .qcard{display:flex;flex-direction:column;min-height:0;overflow-y:auto;scrollbar-width:thin}
+  body.in-sess .qcard .qnav{margin-top:auto;padding-top:20px}
+  body.in-sess .side{position:static;max-height:100%;overflow-y:auto;align-content:start;scrollbar-width:thin}
+  body.in-sess .side .fb{margin-top:0;padding:18px 20px}
+  body.in-sess .side .fb h3{font-size:28px}
+  body.in-sess .side .fb p{font-size:14px}
+}
+@media (min-width:821px) and (max-height:860px){
+  body.in-sess main{padding-top:18px;padding-bottom:18px;gap:14px}
+  body.in-sess main>section.panel:first-child{padding:14px 24px}
+  body.in-sess .sess-top h2{font-size:24px}
+  body.in-sess .prog{margin-top:10px}
+  body.in-sess .qcard{padding:20px 28px}
+  body.in-sess .qbig{font-size:40px}
+  body.in-sess .qnum{margin-bottom:6px}
+  body.in-sess .meta{margin-bottom:10px}
+  body.in-sess .qtext{font-size:18px;margin-bottom:14px}
+  body.in-sess .opts{gap:8px}
+  body.in-sess .opt{padding:10px 14px}
+  body.in-sess .opt .L{width:30px;height:30px}
+  body.in-sess .qcard .qnav{padding-top:14px}
+  body.in-sess .side .kbd{display:none}
+}
 </style>
 </head>
 <body>
@@ -1232,25 +1314,27 @@ function paint(changed){
 const MQ=window.matchMedia("(max-width:820px)");
 const isMobile=()=>MQ.matches;
 function openSheet(){ document.body.classList.add("sheet"); const b=$("#m-acct"); if(b) b.setAttribute("aria-expanded","true"); }
-function closeSheet(){ document.body.classList.remove("sheet"); const b=$("#m-acct"); if(b) b.setAttribute("aria-expanded","false"); }
+function closeSheet(){ document.body.classList.remove("sheet","gridsheet"); const b=$("#m-acct"); if(b) b.setAttribute("aria-expanded","false"); }
 (function(){
   const b=$("#m-acct"), sc=$("#m-scrim");
   if(b) b.onclick=()=>document.body.classList.contains("sheet")?closeSheet():openSheet();
   if(sc) sc.onclick=closeSheet;
+  const ap=$("#app"); if(ap) ap.addEventListener("click",e=>{ if(document.body.classList.contains("gridsheet")&&e.target===ap) closeSheet(); });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
   let y0=null; const sh=$("#sb-foot");
   if(sh){ sh.addEventListener("touchstart",e=>{ y0=e.touches[0].clientY; },{passive:true}); sh.addEventListener("touchend",e=>{ if(y0!==null&&e.changedTouches[0].clientY-y0>60) closeSheet(); y0=null; },{passive:true}); }
 })();
 let mKey="";
 function mobileAfterPaint(changed){
-  if(!isMobile()) return;
+  if(!isMobile()){
+    if(view==="sesion"){ const fb=document.querySelector(".qcard .fb"), sd=document.querySelector(".side"); if(fb&&sd) sd.prepend(fb); const qc=document.querySelector(".qcard"); if(qc&&S&&String(S.i)!==mKey){ mKey=String(S.i); qc.scrollTop=0; } }
+    return;
+  }
   if(view==="sesion"&&S){
     const k=S.i+"|"+(S.revealed?1:0);
     if(k!==mKey){
       const prevI=mKey.split("|")[0]; mKey=k;
-      const fb=document.querySelector(".fb");
-      if(S.revealed&&fb&&String(S.i)===prevI){ setTimeout(()=>fb.scrollIntoView({behavior:RM?"auto":"smooth",block:"start"}),60); }
-      else if(String(S.i)!==prevI){ window.scrollTo({top:0,behavior:"auto"}); }
+      const qc=document.querySelector(".qcard"); if(qc&&String(S.i)!==prevI) qc.scrollTop=0;
     }
     const card=document.querySelector(".qcard");
     if(card&&S.modo!=="practica"){
@@ -1260,6 +1344,7 @@ function mobileAfterPaint(changed){
         if(Math.abs(dx)>70&&Math.abs(dy)<45){ if(dx<0&&S.i<S.qs.length-1){ S.i++; render(); } else if(dx>0&&S.i>0){ S.i--; render(); } } },{passive:true});
     }
   } else { mKey=""; if(changed) window.scrollTo({top:0,behavior:"auto"}); }
+  const mg=document.querySelector("[data-mgrid]"); if(mg) mg.onclick=()=>{ document.body.classList.add("gridsheet"); };
   const ex=document.querySelector("[data-mexit]"); if(ex) ex.onclick=()=>{ const n=$("#nav-inicio"); if(n) n.click(); };
 }
 function enter(app){
@@ -1481,14 +1566,14 @@ function vSesion(){
   }
   const last=S.i===S.qs.length-1;
   const navP=`<div class="qnav"><button class="btn ghost" data-finish>Terminar<span class="dsk"> práctica</span></button>${S.revealed?`<button class="btn primary" data-next>${last?"Ver resumen":`Siguiente<span class="dsk"> pregunta</span>`}</button>`:`<button class="btn primary" data-check ${sel===null?"disabled":""}>Responder</button>`}</div>`;
-  const navS=`<div class="qnav"><div class="row"><button class="btn ghost" data-prev ${S.i===0?"disabled":""} aria-label="Anterior"><span class="m-only" aria-hidden="true">‹</span><span class="dsk">Anterior</span></button><button class="btn ghost" data-flag>${S.flag[S.i]?`Quitar<span class="dsk"> marca</span>`:`Marcar<span class="dsk"> para revisar</span>`}</button></div><div class="row">${last?`<button class="btn primary" data-finish>Finalizar<span class="dsk"> simulacro</span></button>`:`<button class="btn primary" data-nexts>Siguiente</button>`}</div></div>`;
+  const navS=`<div class="qnav"><div class="row"><button class="btn ghost" data-prev ${S.i===0?"disabled":""} aria-label="Anterior"><span class="m-only" aria-hidden="true">‹</span><span class="dsk">Anterior</span></button><button class="btn ghost" data-flag>${S.flag[S.i]?`Quitar<span class="dsk"> marca</span>`:`Marcar<span class="dsk"> para revisar</span>`}</button></div><button class="btn ghost m-only m-gridbtn" data-mgrid aria-label="Ver todas las preguntas"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span class="num">${answered}/${S.qs.length}</span></button><div class="row">${last?`<button class="btn primary" data-finish>Finalizar<span class="dsk"> simulacro</span></button>`:`<button class="btn primary" data-nexts>Siguiente</button>`}</div></div>`;
   const grid=S.qs.map((x,j)=>`<button class="${S.ans[j]!==null?"ans":""} ${j===S.i?"cur":""} ${S.flag[j]?"flag":""}" data-jump="${j}" aria-label="Pregunta ${j+1}">${j+1}</button>`).join("");
   const side=isP?`<div class="panel"><div class="score-live"><span>Aciertos</span><b class="num">${correct}/${answered}</b></div><p class="note num">${answered?Math.round(correct/answered*100):0}% de aciertos en esta práctica</p></div><div class="panel kbd"><div class="lab">Atajos de teclado</div><span><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> elegir opción</span><span><kbd>Enter</kbd> responder y continuar</span></div>`
     :`<div class="panel"><div class="lab note" style="margin-bottom:8px">Respondidas <b class="num">${answered}/${S.qs.length}</b></div><div class="grid-n">${grid}</div><div class="legend"><span>Dorado: respondida</span><span>Punto naranja: marcada para revisar</span></div></div><div class="panel kbd"><div class="lab">Atajos de teclado</div><span><kbd>A</kbd>–<kbd>D</kbd> elegir opción</span><span><kbd>←</kbd> <kbd>→</kbd> pregunta anterior / siguiente</span></div><button class="btn ghost" data-finish>Finalizar ahora</button>`;
   return `
   <section class="panel">
     <div class="sess-top"><div><div class="eyebrow">${isP?"Práctica":"Simulacro"} · ${S.fuente==="ia"?"Inéditas con IA":S.fuente==="original"?"Preguntas del módulo":S.fuente==="mixto"?"Todas las preguntas":S.fuente==="errores"?"Repetir errores":"Banco de práctica adicional"}</div><h2>Régimen del Empleo Público y Ética</h2></div>
-    <div class="row"><span class="note num">Pregunta ${S.i+1} de ${S.qs.length}</span><button class="m-exit" data-mexit aria-label="Salir de la sesión"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>${isP?"":`<span id="timer" class="timer num" aria-label="${S.limit?"Tiempo restante":"Tiempo transcurrido"}">${fmtT(S.limit?Math.max(0,S.limit-elapsed()):elapsed())}</span>`}</div></div>
+    <div class="row">${isP?`<span class="m-only m-score num">${correct}/${answered} ✓</span>`:""}<span class="note num">Pregunta ${S.i+1} de ${S.qs.length}</span><button class="m-exit" data-mexit aria-label="Salir de la sesión"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>${isP?"":`<span id="timer" class="timer num" aria-label="${S.limit?"Tiempo restante":"Tiempo transcurrido"}">${fmtT(S.limit?Math.max(0,S.limit-elapsed()):elapsed())}</span>`}</div></div>
     <div class="prog"><i style="width:${(isP?answered:S.i+1)/S.qs.length*100}%"></i></div>
     ${S.aviso?`<p class="note" style="margin-top:10px">${esc(S.aviso)}</p>`:""}
   </section>
