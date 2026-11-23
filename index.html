@@ -740,6 +740,17 @@ body.is-login footer{display:none}
   body.in-sess .side .kbd{display:none}
 }
 .grps button[aria-pressed="false"]{text-decoration:none!important;opacity:.55}
+
+/* Aviso de cambio de módulo */
+.modchg{display:grid;gap:2px;margin:0 0 16px;padding:12px 16px 12px 18px;border-radius:14px;border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);border-left:4px solid var(--gold);background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 14%,transparent),transparent 80%);animation:riseM .5s both}
+.modchg-k{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text)}
+.modchg b{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.15}
+.modchg-r{font-size:13px;color:var(--muted)}
+.qnum{align-items:center}
+.grid-n .gsep{grid-column:1/-1;font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-text);margin:6px 0 0}
+.grid-n .gsep:first-child{margin-top:0}
+@keyframes riseM{from{opacity:.1}to{opacity:1}}
+@media (max-width:820px){.modchg{padding:10px 12px 10px 14px;margin-bottom:12px}.modchg b{font-size:20px}}
 </style>
 </head>
 <body>
@@ -1148,7 +1159,7 @@ let view = "inicio";
 let history = [];          // intentos guardados
 let iaCache = {};          // preguntas IA vistas (para repetir errores)
 let db = null, sample = null, uid = null, storeOK = false, storeMsg = "Cargando historial…";
-let cfg = {modo:"practica", grps:[], mod:"M1", fuente:"original", temas:temasDe("M1"), nivel:"todos", n:10, tiempo:0};
+let cfg = {modo:"practica", nPer:20, grps:[], mod:"M1", fuente:"original", temas:temasDe("M1"), nivel:"todos", n:10, tiempo:0};
 let S = null;              // sesión activa
 let tick = null;
 
@@ -1208,9 +1219,9 @@ async function loadRemote(){
 function selectUser(id){
   pid=id; try{ localStorage.setItem("pc-user",id); }catch(e){}
   history=lsGet(); prog=lsProg(); iaCache={}; S=null; clearInterval(tick);
+  cfg={modo:"practica", nPer:20, grps:[], mod:"M1", fuente:"original", temas:temasDe("M1"), nivel:"todos", n:10, tiempo:0};
   { let m="M1"; try{ m=localStorage.getItem("pc-mod-"+id)||"M1"; }catch(e){} if(m!=="todos"&&!LOADED.some(c=>c.id===m)) m="M1"; cfg.mod=m; cfg.temas=temasDe(m); if(cfg.fuente==="ia"&&m!=="M1") cfg.fuente="original"; }
   CV.txt={}; CV.shown={}; CV.ia={}; CV.fl=null; CV.i=0;
-  cfg={modo:"practica", fuente:"original", temas:Object.keys(TEMAS), nivel:"todos", n:10, tiempo:0};
   view="inicio"; lastView=null; render(); loadRemote();
 }
 function logout(){ if(S&&!S.done&&S.modo!=="practica"){ openDlg(`<h3 id="dlg-t">¿Cambiar de participante?</h3><p>El simulacro en curso se perderá y no quedará calificado.</p><div class="row"><button class="btn ghost" data-close>Seguir</button><button class="btn primary" data-logout>Cambiar</button></div>`); return; } doLogout(); }
@@ -1255,7 +1266,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",(
   if(!pid) return;
   const v=b.dataset.view;
   if(v==="practicar"){ cfg.modo="practica"; setView("config"); }
-  else if(v==="simulacro"){ cfg.modo="simulacro"; cfg.n=40; setView("config"); }
+  else if(v==="simulacro"){ cfg.modo="simulacro"; cfg.n=20; cfg.nPer=20; setView("config"); }
   else setView(v);
 }));
 function navMark(){
@@ -1466,10 +1477,13 @@ function vConfig(){
   const grps=gnames.map(g=>`<button data-grp="${esc(g)}" aria-pressed="${!cfg.grps.length||cfg.grps.includes(g)}">${esc(g)} <b class="num" style="opacity:.6;font-weight:500">${gq.filter(q=>q.grp===g).length}</b></button>`).join("");
   const temas=Object.entries(TEMAS).filter(([k])=>modTemas.includes(k)).map(([k,n])=>`<button data-tema="${k}" aria-pressed="${cfg.temas.includes(k)}" title="${esc(n)}"><b>${k}</b>${esc(n.length>34?n.slice(0,32)+"…":n)}</button>`).join("");
   const niveles=[["todos","Todos"],["B","Básico"],["I","Intermedio"],["A","Avanzado"]].map(([k,t])=>`<button data-nivel="${k}" aria-pressed="${cfg.nivel===k}">${t}</button>`).join("");
-  const ns=[10,20,40].map(n=>`<button data-n="${n}" aria-pressed="${cfg.n===n}">${n}</button>`).join("");
+  const ns=(cfg.mod==="todos"?[10,20,30]:[10,20,40]).map(n=>`<button data-n="${n}" aria-pressed="${(cfg.mod==="todos"?cfg.nPer:cfg.n)===n}">${n}</button>`).join("");
   const tiempos=[[0,"Sin límite"],[1,"1 min por pregunta"],[1.5,"1,5 min por pregunta"],[2,"2 min por pregunta"]].map(([k,t])=>`<button data-t="${k}" aria-pressed="${cfg.tiempo===k}">${t}</button>`).join("");
   const avail = pool? pool.length : cfg.n;
-  const total = cfg.fuente==="ia"? cfg.n : Math.min(cfg.n, avail);
+  const integ = cfg.mod==="todos" && cfg.fuente!=="ia";
+  const poolI = integ ? poolFor(cfg) : [];
+  const perMod = integ ? LOADED.map(c=>({c, n:Math.min(cfg.nPer, poolI.filter(q=>q.comp===c.id).length)})) : [];
+  const total = cfg.fuente==="ia"? cfg.n : integ ? perMod.reduce((a,x)=>a+x.n,0) : Math.min(cfg.n, avail);
   return `
   <section class="panel ruled">
     <div class="sec-h"><div><div class="eyebrow">${isSim?"Modo 3 · Simulacro de examen":"Modo 2 · Práctica"}</div><h2>${isSim?"Configura tu simulacro":"Configura tu práctica"}</h2></div>
@@ -1482,10 +1496,10 @@ function vConfig(){
       ${cfg.fuente!=="ia"&&gnames.length>1?`<div class="field" style="grid-column:1/-1"><span class="lab">Cuestionario <span class="note" style="text-transform:none;letter-spacing:0;margin-left:6px">${cfg.grps.length?`${cfg.grps.length} seleccionado${cfg.grps.length>1?"s":""} · <button class="btn ghost" style="padding:2px 10px;font-size:12px" data-grpall>Todos</button>`:"todos · toca uno para practicar solo ese"}</span></span><div class="temas grps">${grps}</div></div>`:""}
       <div class="field" style="grid-column:1/-1"><span class="lab">Temas <button class="btn ghost" style="padding:2px 10px;font-size:12px;margin-left:8px" data-alltemas>${modTemas.every(k=>cfg.temas.includes(k))?"Quitar todos":"Todos"}</button></span><div class="temas">${temas}</div></div>
       <div class="field"><span class="lab">Nivel</span><div class="seg" role="group">${niveles}</div></div>
-      <div class="field"><label for="n-custom">Cantidad de preguntas</label><div class="row"><div class="seg" role="group">${ns}</div><input id="n-custom" type="number" min="1" max="${cfg.fuente==="ia"?40:Math.max(1,avail)}" value="${cfg.n}" aria-label="Otra cantidad"></div></div>
+      <div class="field"><label for="n-custom">${cfg.mod==="todos"?"Preguntas por módulo":"Cantidad de preguntas"}</label><div class="row"><div class="seg" role="group">${ns}</div><input id="n-custom" type="number" min="1" max="${cfg.fuente==="ia"?40:cfg.mod==="todos"?100:Math.max(1,avail)}" value="${cfg.mod==="todos"?cfg.nPer:cfg.n}" aria-label="Otra cantidad"></div>${cfg.mod==="todos"?`<span class="note" style="margin-top:6px">Total: <b class="num">${cfg.nPer*LOADED.length}</b> (${LOADED.map(c=>cfg.nPer).join(" + ")})</span>`:""}</div>
       ${isSim?`<div class="field" style="grid-column:1/-1"><span class="lab">Temporizador (opcional)</span><div class="seg" role="group">${tiempos}</div><p class="note">La convocatoria no fija aquí un tiempo; úsalo para entrenar el ritmo.</p></div>`:""}
       <div class="cfg-foot">
-        <span class="note num">${cfg.fuente==="original"&&cfg.n>avail?`El módulo tiene ${avail} preguntas con estos filtros; para más, elige “Todas”. `:""}${cfg.fuente==="ia"?`Se generarán <b>${total}</b> preguntas nuevas.`:`Disponibles con estos filtros: <b>${avail}</b>. Se usarán <b>${total}</b>, en orden aleatorio.`}</span>
+        <span class="note num">${!integ&&cfg.fuente==="original"&&cfg.n>avail?`El módulo tiene ${avail} preguntas con estos filtros; para más, elige “Todas”. `:""}${cfg.fuente==="ia"?`Se generarán <b>${total}</b> preguntas nuevas.`:(integ?`Se usarán <b>${total}</b>: ${perMod.map(x=>`${x.n} del módulo ${modNum(x.c.id)}`).join(", ")}. Primero las del módulo 1 y después las del 2; dentro de cada módulo, en orden aleatorio.`:`Disponibles con estos filtros: <b>${avail}</b>. Se usarán <b>${total}</b>, en orden aleatorio.`)}</span>
         <button class="btn primary" data-start ${total<1||!cfg.temas.length?"disabled":""}>Comenzar ${isSim?"simulacro":"práctica"}</button>
       </div>
     </div>
@@ -1499,19 +1513,13 @@ function startSession(qs, modo, extra){
   S={sid:"s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), modo, fuente:cfg.fuente, nivel:cfg.nivel, qs, ans:qs.map(()=>null), flag:qs.map(()=>false), i:0, revealed:false, t0:Date.now(), limit:(modo!=="practica"&&cfg.tiempo)?Math.round(cfg.tiempo*60*qs.length):0, done:false, ...extra};
   view="sesion"; startTimer(); render(); window.scrollTo(0,0);
 }
-/* Reparte el simulacro integral en partes iguales entre los módulos cargados */
+/* Integral: igual número por módulo; primero el módulo 1, luego el 2…; aleatorio dentro de cada módulo */
 function pickQs(){
   const pool=poolFor(cfg);
   if(cfg.mod!=="todos") return shuffle(pool).slice(0,cfg.n);
-  const comps=[...new Set(pool.map(q=>q.comp))];
-  const by=Object.fromEntries(comps.map(c=>[c,shuffle(pool.filter(q=>q.comp===c))]));
-  const w=comps.map(()=>1), W=w.length;
-  const n=Math.min(cfg.n,pool.length), raw=w.map(x=>n*x/W);
-  const cnt=raw.map(Math.floor); let rest=n-cnt.reduce((a,b)=>a+b,0);
-  raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]).forEach(([f,i])=>{ if(rest>0){ cnt[i]++; rest--; } });
-  let out=[]; comps.forEach((c,i)=>{ out=out.concat(by[c].slice(0,cnt[i])); });
-  if(out.length<n){ const used=new Set(out.map(q=>q.id)); out=out.concat(shuffle(pool.filter(q=>!used.has(q.id))).slice(0,n-out.length)); }
-  return shuffle(out);
+  let out=[];
+  LOADED.forEach(c=>{ out=out.concat(shuffle(pool.filter(q=>q.comp===c.id)).slice(0,cfg.nPer)); });
+  return out;
 }
 async function begin(){
   const modo = cfg.modo;
@@ -1601,7 +1609,8 @@ function vSesion(){
   const last=S.i===S.qs.length-1;
   const navP=`<div class="qnav"><button class="btn ghost" data-finish>Terminar<span class="dsk"> práctica</span></button>${S.revealed?`<button class="btn primary" data-next>${last?"Ver resumen":`Siguiente<span class="dsk"> pregunta</span>`}</button>`:`<button class="btn primary" data-check ${sel===null?"disabled":""}>Responder</button>`}</div>`;
   const navS=`<div class="qnav"><div class="row"><button class="btn ghost" data-prev ${S.i===0?"disabled":""} aria-label="Anterior"><span class="m-only" aria-hidden="true">‹</span><span class="dsk">Anterior</span></button><button class="btn ghost" data-flag>${S.flag[S.i]?`Quitar<span class="dsk"> marca</span>`:`Marcar<span class="dsk"> para revisar</span>`}</button></div><button class="btn ghost m-only m-gridbtn" data-mgrid aria-label="Ver todas las preguntas"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span class="num">${answered}/${S.qs.length}</span></button><div class="row">${last?`<button class="btn primary" data-finish>Finalizar<span class="dsk"> simulacro</span></button>`:`<button class="btn primary" data-nexts>Siguiente</button>`}</div></div>`;
-  const grid=S.qs.map((x,j)=>`<button class="${S.ans[j]!==null?"ans":""} ${j===S.i?"cur":""} ${S.flag[j]?"flag":""}" data-jump="${j}" aria-label="Pregunta ${j+1}">${j+1}</button>`).join("");
+  const multi=new Set(S.qs.map(x=>x.comp||"M1")).size>1;
+  const grid=S.qs.map((x,j)=>(multi&&(j===0||(S.qs[j-1].comp||"M1")!==(x.comp||"M1"))?`<span class="gsep">Módulo ${modNum(x.comp||"M1")}</span>`:"")+`<button class="${S.ans[j]!==null?"ans":""} ${j===S.i?"cur":""} ${S.flag[j]?"flag":""}" data-jump="${j}" aria-label="Pregunta ${j+1}">${j+1}</button>`).join("");
   const side=isP?`<div class="panel"><div class="score-live"><span>Aciertos</span><b class="num">${correct}/${answered}</b></div><p class="note num">${answered?Math.round(correct/answered*100):0}% de aciertos en esta práctica</p></div><div class="panel kbd"><div class="lab">Atajos de teclado</div><span><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> elegir opción</span><span><kbd>Enter</kbd> responder y continuar</span></div>`
     :`<div class="panel"><div class="lab note" style="margin-bottom:8px">Respondidas <b class="num">${answered}/${S.qs.length}</b></div><div class="grid-n">${grid}</div><div class="legend"><span>Dorado: respondida</span><span>Punto naranja: marcada para revisar</span></div></div><div class="panel kbd"><div class="lab">Atajos de teclado</div><span><kbd>A</kbd>–<kbd>D</kbd> elegir opción</span><span><kbd>←</kbd> <kbd>→</kbd> pregunta anterior / siguiente</span></div><button class="btn ghost" data-finish>Finalizar ahora</button>`;
   return `
@@ -1613,7 +1622,9 @@ function vSesion(){
   </section>
   <div class="qwrap">
     <article class="panel qcard ruled">
-      <div class="qnum"><span class="qbig num">${String(S.i+1).padStart(2,"0")}</span><span>de ${S.qs.length}</span></div>
+      ${(()=>{ const cs=[...new Set(S.qs.map(x=>x.comp||"M1"))]; if(cs.length<2) return ""; const c=q.comp||"M1"; const first=S.qs.findIndex(x=>(x.comp||"M1")===c); if(S.i!==first) return ""; let last=first; S.qs.forEach((x,j)=>{ if((x.comp||"M1")===c) last=j; });
+        return `<div class="modchg" role="status"><span class="modchg-k">${S.i===0?"Comienza":"Cambio de módulo"} · Módulo ${modNum(c)} de ${cs.length}</span><b>${esc(compN(c))}</b><span class="modchg-r">Preguntas ${first+1} a ${last+1}${S.i===0?"":". Terminaste el módulo "+modNum(S.qs[S.i-1].comp||"M1")}</span></div>`; })()}
+      <div class="qnum"><span class="qbig num">${String(S.i+1).padStart(2,"0")}</span><span>de ${S.qs.length}</span>${(()=>{ const cs=[...new Set(S.qs.map(x=>x.comp||"M1"))]; return cs.length>1?`<span class="tag gold" style="margin-left:auto">Módulo ${modNum(q.comp||"M1")}</span>`:""; })()}</div>
       <div class="meta"><span class="tag">Tema ${q.tema} · ${esc(TEMAS[q.tema])}</span><span class="tag">${NIVEL[q.nivel]}</span>${tag}${q.src!=="ia"?`<span class="tag mono">${esc(q.id)}</span>`:""}</div>
       <p class="qtext">${esc(q.q)}</p>
       <div class="opts" role="group" aria-label="Opciones">${opts}</div>
@@ -1853,12 +1864,12 @@ function bind(){
   app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
     const g=b.dataset.go;
     if(g==="practica"){ cfg.modo="practica"; setView("config"); }
-    else if(g==="simulacro"){ cfg.modo="simulacro"; cfg.nivel="todos"; cfg.n=40; setView("config"); }
+    else if(g==="simulacro"){ cfg.modo="simulacro"; cfg.nivel="todos"; cfg.n=20; cfg.nPer=20; setView("config"); }
     else if(g==="dificil"){ cfg.modo="simulacro"; cfg.nivel="A"; cfg.fuente="mixto"; cfg.n=20; setView("config"); }
     else if(g==="casos"){ setView("casos"); }
     else if(g==="errores"){ const qs=shuffle(errorIds().map(id=>BYID[id]||iaCache[id]).filter(Boolean)); const pf=cfg.fuente; cfg.fuente="errores"; startSession(qs,"practica"); cfg.fuente=pf; }
   });
-  app.querySelectorAll("[data-modo]").forEach(b=>b.onclick=()=>{ cfg.modo=b.dataset.modo; if(cfg.modo==="simulacro"&&cfg.n<20) cfg.n=40; render(); });
+  app.querySelectorAll("[data-modo]").forEach(b=>b.onclick=()=>{ cfg.modo=b.dataset.modo; if(cfg.modo==="simulacro"){ if(cfg.n<20) cfg.n=20; cfg.nPer=20; } render(); });
   app.querySelectorAll("[data-fuente]").forEach(b=>b.onclick=()=>{ cfg.fuente=b.dataset.fuente; cfg.grps=[]; render(); });
   app.querySelectorAll("[data-grp]").forEach(b=>b.onclick=()=>{ const g=b.dataset.grp; cfg.grps=!cfg.grps.length?[g]:cfg.grps.includes(g)?cfg.grps.filter(x=>x!==g):cfg.grps.concat(g); render(); });
   const ga=app.querySelector("[data-grpall]"); if(ga) ga.onclick=()=>{ cfg.grps=[]; render(); };
@@ -1866,9 +1877,9 @@ function bind(){
   app.querySelectorAll("[data-tema]").forEach(b=>b.onclick=()=>{ const k=b.dataset.tema; cfg.temas=cfg.temas.includes(k)?cfg.temas.filter(x=>x!==k):cfg.temas.concat(k).sort(); render(); });
   const at=app.querySelector("[data-alltemas]"); if(at) at.onclick=()=>{ const mt=temasDe(cfg.mod); cfg.temas=mt.every(k=>cfg.temas.includes(k))?[]:mt; render(); };
   app.querySelectorAll("[data-nivel]").forEach(b=>b.onclick=()=>{ cfg.nivel=b.dataset.nivel; render(); });
-  app.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{ cfg.n=+b.dataset.n; render(); });
+  app.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{ if(cfg.mod==="todos"){ cfg.nPer=+b.dataset.n; render(); return; } cfg.n=+b.dataset.n; render(); });
   app.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ cfg.tiempo=+b.dataset.t; render(); });
-  const nc=$("#n-custom"); if(nc) nc.onchange=()=>{ const v=Math.max(1,Math.min(+nc.max||150,Math.round(+nc.value||1))); cfg.n=v; render(); };
+  const nc=$("#n-custom"); if(nc) nc.onchange=()=>{ const v=Math.max(1,Math.min(+nc.max||150,Math.round(+nc.value||1))); if(cfg.mod==="todos") cfg.nPer=v; else cfg.n=v; render(); };
   const st=app.querySelector("[data-start]"); if(st) st.onclick=begin;
   app.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>choose(+b.dataset.opt));
   const ck=app.querySelector("[data-check]"); if(ck) ck.onclick=check;
