@@ -1474,7 +1474,7 @@ function vConfig(){
   <section class="panel ruled">
     <div class="sec-h"><div><div class="eyebrow">${isSim?"Modo 3 · Simulacro de examen":"Modo 2 · Práctica"}</div><h2>${isSim?"Configura tu simulacro":"Configura tu práctica"}</h2></div>
       <div class="seg" role="group" aria-label="Modo"><button data-modo="practica" aria-pressed="${!isSim}">Práctica</button><button data-modo="simulacro" aria-pressed="${isSim}">Simulacro</button></div></div>
-    <p class="note" style="margin:0 0 20px">${isSim?"Las respuestas y explicaciones se muestran solo al finalizar. "+(cfg.mod==="todos"?"Componentes evaluados: "+LOADED.map(c=>c.n+" ("+c.p+" %)").join(", ")+". Las preguntas se reparten según esa ponderación.":"Componente evaluado: "+compN(cfg.mod)+"."):"Después de cada respuesta verás si acertaste, la opción correcta, por qué lo es y la fuente en el material."}</p>
+    <p class="note" style="margin:0 0 20px">${isSim?"Las respuestas y explicaciones se muestran solo al finalizar. "+(cfg.mod==="todos"?"Componentes evaluados: "+LOADED.map(c=>c.n).join(", ")+". Las preguntas se reparten en partes iguales entre los módulos"+(LOADED.length===2?" (con 40, 20 y 20).":"."):"Componente evaluado: "+compN(cfg.mod)+"."):"Después de cada respuesta verás si acertaste, la opción correcta, por qué lo es y la fuente en el material."}</p>
     <div class="cfg">
       <div class="field" style="grid-column:1/-1"><span class="lab">Módulo</span><div class="seg mods" role="group" aria-label="Módulo">${mods}</div></div>
       <div class="field" style="grid-column:1/-1"><span class="lab">Origen de las preguntas</span><div class="seg" role="group">${fuentes}</div>
@@ -1499,13 +1499,13 @@ function startSession(qs, modo, extra){
   S={sid:"s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), modo, fuente:cfg.fuente, nivel:cfg.nivel, qs, ans:qs.map(()=>null), flag:qs.map(()=>false), i:0, revealed:false, t0:Date.now(), limit:(modo!=="practica"&&cfg.tiempo)?Math.round(cfg.tiempo*60*qs.length):0, done:false, ...extra};
   view="sesion"; startTimer(); render(); window.scrollTo(0,0);
 }
-/* Reparte el simulacro integral según la ponderación oficial de los componentes cargados */
+/* Reparte el simulacro integral en partes iguales entre los módulos cargados */
 function pickQs(){
   const pool=poolFor(cfg);
   if(cfg.mod!=="todos") return shuffle(pool).slice(0,cfg.n);
   const comps=[...new Set(pool.map(q=>q.comp))];
   const by=Object.fromEntries(comps.map(c=>[c,shuffle(pool.filter(q=>q.comp===c))]));
-  const w=comps.map(c=>(COMPONENTES.find(x=>x.id===c)||{p:1}).p), W=w.reduce((a,b)=>a+b,0);
+  const w=comps.map(()=>1), W=w.length;
   const n=Math.min(cfg.n,pool.length), raw=w.map(x=>n*x/W);
   const cnt=raw.map(Math.floor); let rest=n-cnt.reduce((a,b)=>a+b,0);
   raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]).forEach(([f,i])=>{ if(rest>0){ cnt[i]++; rest--; } });
