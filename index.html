@@ -1230,8 +1230,12 @@ const PARTICIPANTES=[
   {id:"gustavo-cotes",n:"Gustavo Cotes"},
   {id:"javier-jimenez",n:"Javier Jiménez"},
   {id:"luis-duran",n:"Luis Durán"},
-  {id:"manuel-rodriguez",n:"Manuel Rodríguez"},
-  {id:"yeline-granados",n:"Yeline Granados"}
+  {id:"manuel-rodriguez",n:"Manuel Rodríguez"}
+];
+/* Participantes archivados: no aparecen en la lista, pero su avance se conserva en la base de datos.
+   Para reactivar, mover la entrada de vuelta a PARTICIPANTES. */
+const ARCHIVADOS=[
+  {id:"yeline-granados",n:"Yeline Granados", desde:"2026-11-24"}
 ];
 let pid=(function(){ try{ const v=localStorage.getItem("pc-user"); return PARTICIPANTES.some(p=>p.id===v)?v:null; }catch(e){ return null; } })();
 const pName=()=>{ const p=PARTICIPANTES.find(x=>x.id===pid); return p?p.n:""; };
