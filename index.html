@@ -793,6 +793,31 @@ body.in-sess .qcard,body.in-sess .side,.sidebar{scrollbar-color:color-mix(in srg
   .btn,.seg button,.chip{min-height:44px}
 }
 @media (prefers-reduced-motion:reduce){.qcard>*,.modchg>*,.opt{animation:none!important}}
+
+/* ---- Preguntas largas (evaluaciones con casos extensos) ---- */
+@media (min-width:821px){
+  body.in-sess .qwrap{align-items:stretch}
+  body.in-sess .qcard{max-height:100%}
+  .qtext.long{font-size:18px;line-height:1.5}
+  .qtext.xlong{font-size:16.5px;line-height:1.5}
+  body.in-sess .qtext.long{font-size:17px}
+  body.in-sess .qtext.xlong{font-size:16px;margin-bottom:12px}
+  .qcard:has(.qtext.xlong) .opt{font-size:14.5px;padding:9px 14px}
+}
+@media (max-width:820px){
+  body.in-sess .qtext.long{font-size:15.5px;line-height:1.45}
+  body.in-sess .qtext.xlong{font-size:15px;line-height:1.45}
+  body.in-sess .qcard:has(.qtext.long) .opt,body.in-sess .qcard:has(.qtext.xlong) .opt{font-size:14px;line-height:1.38;padding:9px 11px;min-height:44px}
+  body.in-sess .qcard:has(.qtext.xlong) .meta{margin-bottom:6px}
+}
+.qcard.more::after{content:"Desliza para ver más ↓";position:sticky;bottom:-1px;display:block;margin:-46px -2px 0;height:46px;padding-top:20px;text-align:center;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-text);background:linear-gradient(to bottom,transparent,var(--surface) 62%);pointer-events:none;z-index:2}
+@media (prefers-reduced-motion:no-preference){.qcard.more::after{animation:moreIn var(--duration-fast) var(--ease-smooth-out)}}
+@keyframes moreIn{from{opacity:0}to{opacity:1}}
+@media (min-width:821px){
+  body.in-sess .qcard .qnav{position:sticky;bottom:-20px;z-index:3;background:var(--surface);margin-left:-28px;margin-right:-28px;padding:12px 28px 4px;margin-bottom:-4px}
+  body.in-sess .qcard.more::after{display:none}
+  body.in-sess .qcard.more .qnav::before{content:"Desliza para ver más ↓";position:absolute;left:0;right:0;top:-34px;height:34px;padding-top:14px;text-align:center;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-text);background:linear-gradient(to bottom,transparent,var(--surface) 70%);pointer-events:none}
+}
 </style>
 </head>
 <body>
@@ -1393,6 +1418,7 @@ function paint(changed){
   bind();
   drawGuilloche(changed);
   if(changed) enter(app);
+  if(view==="sesion") moreHint();
   if(view==="sesion"&&S&&!RM){ const qc=app.querySelector(".qcard"); if(qc&&!changed&&qPrevI!==null&&qPrevI!==S.i) qc.classList.add(S.i>qPrevI?"t-next":"t-prev"); qPrevI=S.i; } else qPrevI=null;
   mobileAfterPaint(changed);
 }
@@ -1447,6 +1473,13 @@ function enter(app){
   app.querySelectorAll("circle.arc").forEach(c=>{ const full=+c.dataset.full, val=+c.dataset.val; c.style.transition="none"; c.setAttribute("stroke-dasharray",`0 ${full}`); requestAnimationFrame(()=>requestAnimationFrame(()=>{ c.style.transition="stroke-dasharray 1.4s cubic-bezier(.2,.8,.2,1) .15s"; c.setAttribute("stroke-dasharray",`${val} ${full}`); })); });
 }
 
+
+/* Aviso de que hay más contenido abajo cuando la pregunta es larga */
+function moreHint(){
+  const qc=document.querySelector(".qcard"); if(!qc) return;
+  const upd=()=>qc.classList.toggle("more", qc.scrollHeight>qc.clientHeight+6 && qc.scrollTop+qc.clientHeight<qc.scrollHeight-12);
+  qc.onscroll=upd; requestAnimationFrame(upd); setTimeout(upd,300);
+}
 /* GSAP: un solo momento de autor en Inicio y en Resultados (conteo, arco y veredicto) */
 function gsapEnter(app){
   const fmt=(v,dec)=>(dec?(Math.round(v*10)/10):Math.round(v)).toString().replace(".",",");
@@ -1710,7 +1743,7 @@ function vSesion(){
         return `<div class="modchg" role="status"><span class="modchg-k">${S.i===0?"Comienza":"Cambio de módulo"} · Módulo ${modNum(c)} de ${cs.length}</span><b>${esc(compN(c))}</b><span class="modchg-r">Preguntas ${first+1} a ${last+1}${S.i===0?"":". Terminaste el módulo "+modNum(S.qs[S.i-1].comp||"M1")}</span></div>`; })()}
       <div class="qnum"><span class="qbig num">${String(S.i+1).padStart(2,"0")}</span><span>de ${S.qs.length}</span>${(()=>{ const cs=[...new Set(S.qs.map(x=>x.comp||"M1"))]; return cs.length>1?`<span class="tag gold" style="margin-left:auto">Módulo ${modNum(q.comp||"M1")}</span>`:""; })()}</div>
       <div class="meta"><span class="tag">Tema ${q.tema} · ${esc(TEMAS[q.tema])}</span><span class="tag">${NIVEL[q.nivel]}</span>${tag}${q.src!=="ia"?`<span class="tag mono">${esc(q.id)}</span>`:""}</div>
-      <p class="qtext">${esc(q.q)}</p>
+      <p class="qtext${q.q.length>650?" xlong":q.q.length>380?" long":""}">${esc(q.q)}</p>
       <div class="opts" role="group" aria-label="Opciones">${opts}</div>
       ${fb}
       ${isP?navP:navS}
